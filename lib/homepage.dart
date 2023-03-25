@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notes'),
@@ -37,100 +38,103 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Expanded(
-            //   flex: 15,
-            //   child: Row(
-            //     children: [
-            //       Expanded(
-            //         child: Container(
-            //           color: Colors.red,
-            //           margin: const EdgeInsets.all(10),
-            //           child: Column(
-            //             crossAxisAlignment: CrossAxisAlignment.stretch,
-            //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //             children: [
-            //               const SizedBox(),
-            //               ElevatedButton(
-            //                 child: const Text('Save'),
-            //                 onPressed: () {},
-            //               ),
-            //             ],
-            //           ),
-            //         ),
-            //       ),
-            //       Expanded(
-            //         flex: 10,
-            //         child: Container(),
-            //       )
-            //     ],
-            //   ),
-            // ),
             SizedBox(
               height: 200,
               child: FutureBuilder<QuerySnapshot>(
                 future: ref.get(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    return ListView.builder(
-                        itemCount: snapshot.data?.docs.length,
-                        itemBuilder: (context, index) {
-                          Color bg = Colors.purple;
-                          Map data = snapshot.data?.docs[index].data() as Map;
-                          DateTime myDateTime = (data['created']).toDate();
+                    final dataList = snapshot.data?.docs.map((doc) {
+                      return doc.data() as Map<String, dynamic>;
+                    }).toList()?..sort((a, b) {
+                        return (b['created'] as Timestamp)
+                            .compareTo(a['created'] as Timestamp);
+                      });
+                    return SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Wrap(
+                          spacing: 13,
+                          runSpacing: 13,
+                          alignment: WrapAlignment.center,
+                          children: List.generate(dataList!.length,
+                              (index) {
+                            Color bg = Colors.purple;
+                            Map data = dataList[index];
+                            DateTime myDateTime = (data['created']).toDate();
+                            DateTime lastEditDate = (data['updated'])
+                                .toDate();
 
-                          String formattedTime =
-                              DateFormat.yMMMd().add_jm().format(myDateTime);
-                          return InkWell(
-                            onTap: () {
-                              Navigator.of(context)
-                                  .push(
-                                MaterialPageRoute(
-                                  builder: (context) => ViewNote(
-                                    data,
-                                    formattedTime,
-                                    snapshot.data!.docs[index].reference,
+                            String formattedTime =
+                                DateFormat.yMMMd().add_jm().format(myDateTime);
+                            return InkWell(
+                              onTap: () {
+                                Navigator.of(context)
+                                    .push(
+                                  MaterialPageRoute(
+                                    builder: (context) => ViewNote(
+                                      data,
+                                      formattedTime,
+                                      snapshot.data!.docs[index].reference,
+                                    ),
                                   ),
+                                )
+                                    .then((value) {
+                                  setState(() {});
+                                });
+                              },
+                              child: Container(
+                                width: (size.width / 2) - 30,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: bg,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                              )
-                                  .then((value) {
-                                setState(() {});
-                              });
-                            },
-                            child: Card(
-                              color: bg,
-                              child: Padding(
-                                padding: const EdgeInsets.all(15.0),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${data['title']}",
-                                        style: const TextStyle(
-                                          fontSize: 32.0,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-
-                                      //
-                                      Container(
-                                        alignment: (Alignment.centerRight),
-                                        child: Text(
-                                          DateFormat.yMMMd()
-                                              .add_jm()
-                                              .format(myDateTime),
-                                          style: const TextStyle(
-                                            fontSize: 20.0,
-                                            color: Colors.black87,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(15.0),
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          alignment: (Alignment.centerRight),
+                                          child: Text(
+                                            'created on ${DateFormat.yMMMd()
+                                                .add_jm()
+                                                .format(myDateTime)}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black87,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ]),
+                                        Container(
+                                          alignment: (Alignment.centerRight),
+                                          child: Text(
+                                            'last edited on ${DateFormat.yMMMd()
+                                                .add_jm()
+                                                .format(lastEditDate)}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          "${data['title']}",
+                                          style: const TextStyle(
+                                            fontSize: 32.0,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ]),
+                                ),
                               ),
-                            ),
-                          );
-                        });
+                            );
+                          })),
+                    );
                   } else {
                     return const Center(
                       child: Text("Loading...",
@@ -142,6 +146,7 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
             ),
+            const SizedBox(height: 20),
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 15),

@@ -225,7 +225,7 @@ class _ViewNoteState extends State<ViewNote> {
     // if (key.currentState?.validate()) {
     // TODO : showing any kind of alert that new changes have been saved.
     await widget.ref.update(
-      {'title': title, 'description': des},
+      {'title': title, 'description': des, 'updated': DateTime.now()},
     );
     if (!mounted) return;
     FocusManager.instance.primaryFocus?.unfocus();

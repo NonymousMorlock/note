@@ -132,6 +132,7 @@ class _AddNoteState extends State<AddNote> {
       'title': title,
       'description': des,
       'created': DateTime.now(),
+      'updated': DateTime.now(),
     };
     ref.add(data);
     //
