@@ -10,8 +10,8 @@ class AddNote extends StatefulWidget {
 }
 
 class _AddNoteState extends State<AddNote> {
-  late String title;
-  late String des;
+  String title = '';
+  String des = '';
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +124,7 @@ class _AddNoteState extends State<AddNote> {
 
   void add() async {
     // save to db
+
     CollectionReference ref = FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser?.uid)

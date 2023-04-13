@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:note/addnote.dart';
+import 'package:note/model/note_model.dart';
 
 import 'viewnote.dart';
 
@@ -45,10 +46,12 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     final dataList = snapshot.data?.docs.map((doc) {
-                      return doc.data() as Map<String, dynamic>;
+                      final documentData = doc.data() as Map<String, dynamic>;
+                      documentData['ref'] = doc.reference;
+                      return NoteModel.fromJson(documentData);
                     }).toList()?..sort((a, b) {
-                        return (b['created'] as Timestamp)
-                            .compareTo(a['created'] as Timestamp);
+                        return (b.createdTime as Timestamp)
+                            .compareTo(a.createdTime as Timestamp);
                       });
                     return SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -59,10 +62,9 @@ class _HomePageState extends State<HomePage> {
                           children: List.generate(dataList!.length,
                               (index) {
                             Color bg = Colors.purple;
-                            Map data = dataList[index];
-                            DateTime myDateTime = (data['created']).toDate();
-                            DateTime lastEditDate = (data['updated'])
-                                .toDate();
+                            NoteModel data = dataList[index];
+                            DateTime myDateTime = data.createdTime!.toDate();
+                            DateTime lastEditDate = data.updatedTime!.toDate();
 
                             String formattedTime =
                                 DateFormat.yMMMd().add_jm().format(myDateTime);
@@ -72,9 +74,8 @@ class _HomePageState extends State<HomePage> {
                                     .push(
                                   MaterialPageRoute(
                                     builder: (context) => ViewNote(
-                                      data,
-                                      formattedTime,
-                                      snapshot.data!.docs[index].reference,
+                                      note: data,
+                                      time: formattedTime,
                                     ),
                                   ),
                                 )
@@ -122,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         ),
                                         Text(
-                                          "${data['title']}",
+                                          "${data.title}",
                                           style: const TextStyle(
                                             fontSize: 32.0,
                                             fontWeight: FontWeight.bold,

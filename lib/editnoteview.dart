@@ -1,131 +1,108 @@
 import 'package:flutter/material.dart';
-import 'model/mynotemodel.dart';
+import 'package:note/model/note_model.dart';
 
-class Editnoteview extends StatefulWidget {
- var myNotes;
- var note;
+class EditNoteView extends StatefulWidget {
+  const EditNoteView({super.key, required this.note});
 
-
-  Editnoteview({required this.note});
+  final NoteModel note;
 
   @override
-  _EditnoteviewState createState() => _EditnoteviewState();
+  State<EditNoteView> createState() => _EditNoteViewState();
 }
-class _EditnoteviewState extends State<Editnoteview> {
-  late String NewTitle;
-  late String NewNoteDet;
+
+class _EditNoteViewState extends State<EditNoteView> {
+  late String newTitle;
+  late String newNoteContent;
 
   @override
   void initState() {
-    // TODO: implement initState
+    debugPrint('EditNoteView: initState() called');
     super.initState();
-
-    this.NewTitle = widget.note.title.toString();
-    this.NewNoteDet = widget.note.content.toString();
+    newTitle = widget.note.title.toString();
+    newNoteContent = widget.note.content.toString();
   }
 
+  @override
   Widget build(BuildContext context) {
-    var bgColor;
-    var Inputborder;
     return Scaffold(
-      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: bgColor,
         elevation: 0.0,
         actions: [
           IconButton(
               splashRadius: 17,
               onPressed: () async {
-                MyNoteModel newNote = myNotes(
-                    content: NewNoteDet,
-                    title: NewTitle,
+                NoteModel newNote = myNotes(
+                    content: newNoteContent,
+                    title: newTitle,
                     createdTime: DateTime.now(),
-                    id: widget.note.id );
+                    id: widget.note.ref!.id);
                 var NotesDatabase;
                 await NotesDatabase.instance.updateNote(newNote);
 
                 Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (context) =>
-                    viewnote(note: newNote,)));
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => viewnote(
+                              note: newNote,
+                            )));
               },
               icon: Icon(Icons.save_outlined))
         ],
       ),
-      body:
-      Container(
-          margin: EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 10
-          ),
+      body: Container(
+          margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           child: Column(
             children: [
               Form(
-                child:
-                TextFormField(
+                child: TextFormField(
                   initialValue: "NewTitle",
                   cursorColor: Colors.white,
-                  style: TextStyle(
-                      fontSize: 25,
-                      color: Colors.white),
+                  style: TextStyle(fontSize: 25, color: Colors.white),
                   decoration: InputDecoration(
                       border: InputBorder.none,
                       focusedBorder: InputBorder.none,
                       enabledBorder: InputBorder.none,
-
                       hintStyle: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey.withOpacity(0.8))),
                 ),
               ),
-
               Container(
                 height: 300,
                 child: Form(
                   child: TextFormField(
                     onChanged: (value) {
-                      NewNoteDet = value;
+                      newNoteContent = value;
                     },
                     initialValue: "NewNoteDet",
                     cursorColor: Colors.white,
                     keyboardType: TextInputType.multiline,
                     minLines: 50,
                     maxLines: 50,
-                    style: TextStyle(
-                        fontSize: 17,
-                        color: Colors.white),
+                    style: TextStyle(fontSize: 17, color: Colors.white),
                     decoration: InputDecoration(
                         border: InputBorder.none,
                         focusedBorder: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         errorBorder: InputBorder.none,
-                     //   disabledBorder: Inputborder.none,
+                        //   disabledBorder: Inputborder.none,
                         hintText: "Notes",
                         hintStyle: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.grey.withOpacity(0.8)
-                        )
-                    ),
+                            color: Colors.grey.withOpacity(0.8))),
                   ),
                 ),
               ),
             ],
-          )
-      ),
+          )),
     );
   }
 
-  viewnote({required MyNoteModel note}) {}
+  viewnote({required NoteModel note}) {}
 
   myNotes(
-      {required String content, required DateTime createdTime, required id, required String title}) {}
-
+      {required String content,
+      required DateTime createdTime,
+      required id,
+      required String title}) {}
 }
-
-
-
-
-
-
-
-
-

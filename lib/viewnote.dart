@@ -1,15 +1,18 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:note/login.dart';
+import 'package:note/model/note_model.dart';
 
 class ViewNote extends StatefulWidget {
-  final Map data;
-  final String time;
-  final DocumentReference ref;
+  const ViewNote({
+    super.key,
+    required this.note,
+    required this.time,
+  });
 
-  const ViewNote(this.data, this.time, this.ref, {super.key});
+  final NoteModel note;
+  final String time;
 
   @override
   State<ViewNote> createState() => _ViewNoteState();
@@ -25,13 +28,16 @@ class _ViewNoteState extends State<ViewNote> {
   get isEmpty => null;
 
   @override
-  Widget build(BuildContext context) {
-    title = widget.data['title'];
-    des = widget.data['description'];
+  void initState() {
+    super.initState();
+    title = widget.note.title!;
+    des = widget.note.content!;
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        //
         floatingActionButton: FloatingActionButton(
           onPressed: edit
               ? save
@@ -51,8 +57,6 @@ class _ViewNoteState extends State<ViewNote> {
             color: Colors.white70,
           ),
         ),
-        //
-        //
         body: SingleChildScrollView(
           child: Container(
             padding: const EdgeInsets.all(
@@ -153,7 +157,7 @@ class _ViewNoteState extends State<ViewNote> {
                               fontWeight: FontWeight.bold,
                               color: Colors.grey,
                             ),
-                            initialValue: widget.data['title'],
+                            initialValue: widget.note.title,
                             enabled: edit,
                             onChanged: (val) {
                               title = val;
@@ -196,7 +200,7 @@ class _ViewNoteState extends State<ViewNote> {
                         fontSize: 20.0,
                         color: Colors.grey,
                       ),
-                      initialValue: widget.data['description'],
+                      initialValue: widget.note.content,
                       enabled: edit,
                       onChanged: (val) {
                         des = val;
@@ -215,7 +219,7 @@ class _ViewNoteState extends State<ViewNote> {
 
   void delete() async {
     // delete from db
-    await widget.ref.delete();
+    await widget.note.ref!.delete();
     if (!mounted) return;
     FocusManager.instance.primaryFocus?.unfocus();
     Navigator.pop(context);
@@ -224,7 +228,7 @@ class _ViewNoteState extends State<ViewNote> {
   void save() async {
     // if (key.currentState?.validate()) {
     // TODO : showing any kind of alert that new changes have been saved.
-    await widget.ref.update(
+    await widget.note.ref!.update(
       {'title': title, 'description': des, 'updated': DateTime.now()},
     );
     if (!mounted) return;
